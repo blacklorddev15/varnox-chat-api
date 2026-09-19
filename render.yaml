@@ -34,5 +34,7 @@ services:
         sync: false
       - key: RESEND_API_KEY
         sync: false
+      # Not a secret, and it has to match a domain verified in Resend or sends are rejected -
+      # so it is pinned here rather than left to be typed correctly by hand.
       - key: RESEND_FROM
-        sync: false
+        value: "Varnox Chat <no-reply@varnoxapp.blacklord.tech>"
