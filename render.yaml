@@ -1,0 +1,38 @@
+# Render blueprint for the Varnox Chat API.
+#
+# Deploy: Render dashboard -> New -> Blueprint -> pick this repo.
+# Or create the service by hand and copy these commands and variables.
+
+services:
+  - type: web
+    name: varnox-chat-api
+    runtime: node
+    # `starter` or above. See "Do not use the free plan" in README.md - the free tier sleeps
+    # after ~15 minutes idle, which silently drops every open event stream.
+    plan: starter
+    # Singapore is a reasonable default for users in APAC; change if yours are elsewhere.
+    region: singapore
+    branch: main
+    autoDeploy: true
+    # corepack ships with Node and activates the pnpm version pinned in package.json.
+    buildCommand: corepack enable && pnpm install --frozen-lockfile && pnpm build
+    # Applies any pending migration before the new version takes traffic. Needs DATABASE_URL,
+    # which is available to pre-deploy commands.
+    preDeployCommand: pnpm db:migrate
+    startCommand: node server-dist/index.mjs
+    # Render's own check, so a deploy that starts but cannot serve is rolled back.
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: OWNER_OPEN_ID
+        value: blacklorddev
+      # sync: false means "prompt me in the dashboard" - no value is stored here.
+      - key: DATABASE_URL
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: RESEND_API_KEY
+        sync: false
+      - key: RESEND_FROM
+        sync: false
